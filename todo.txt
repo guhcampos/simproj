@@ -1,0 +1,4 @@
+- Corrigir Indexes para ter período inicial e final
+- Implementar poupança
+- Implementar títulos pós fixados
+- Pesquisar implementação de monte carlo em python

@@ -1,0 +1,159 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>{{app_name}}</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+
+        <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
+        <style>
+            body {
+                padding-top: 60px;
+                padding-bottom: 40px;
+            }
+        </style>
+        <link rel="stylesheet" href="{% static 'css/bootstrap-responsive.css' %} " />
+        <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+        <!--<link rel="stylesheet" href="{% static 'css/nv.css' %}" />-->
+        <link rel="stylesheet" href="{% static 'css/rickshaw.css' %}" />
+        {% block customcss %}
+        <!-- CSS especifico de telas entra aqui -->
+        {% endblock %}
+        <script src="{% static "js/modernizr.js" %}"></script>
+
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+        <![endif]-->
+
+        <!-- This code is taken from http://twitter.github.com/bootstrap/examples/hero.html -->
+
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+                    <a class="brand" href="#">{{app_name}}</a>
+                    <div class="nav-collapse collapse">
+                        <ul class="nav">
+                            <li class="active"><a href="/">Home</a></li>
+                            <!--
+                            <li><a href="#about">About</a></li>
+                            <li><a href="#contact">Contact</a></li>
+                            -->
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Viabilidade de Projeto<b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="/simulation">Nova Simulação</a></li>
+                                    <!--
+                                    <li class="divider"></li>
+                                    <li class="nav-header">Nav header</li>
+                                    <li><a href="#">Separated link</a></li>
+                                    <li><a href="#">One more separated link</a></li>
+                                    -->
+                                </ul>
+                            </li>
+                            <!--<li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Financiamentos<b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="/financing">Nova Simulação</a></li>
+                                    
+                                    <li class="divider"></li>
+                                    <li class="nav-header">Nav header</li>
+                                    <li><a href="#">Separated link</a></li>
+                                    <li><a href="#">One more separated link</a></li>
+                                    
+                                </ul>
+                            </li> -->
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Renda Fixa<b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="/fixedincome">Nova Simulação</a></li>
+                                    <!--
+                                    <li class="divider"></li>
+                                    <li class="nav-header">Nav header</li>
+                                    <li><a href="#">Separated link</a></li>
+                                    <li><a href="#">One more separated link</a></li>
+                                    -->
+                                </ul>
+                            </li>
+                        </ul> 
+                        {% if username %}
+                        <a href="{{logout_url}}" class="navbar-form pull-right">
+                            <button type="submit" class="btn">Fazer Logout</button>
+                        </a>
+                        {% else %}
+                        <a href="{{login_url}}" class="navbar-form pull-right">
+                            <button type="submit" class="btn">Fazer Login</button>
+                        </a>
+                        {% endif %}
+                    </div><!--/.nav-collapse -->
+                </div>
+            </div>
+        </div>
+        <div id="app-header" class="app-header">
+            <h3>{% block app-title %}{% endblock %}</h3>
+        </div>
+
+        <div class="container">
+            {% block container %}
+            <!-- Main hero unit for a primary marketing message or call to action -->
+            <div class="hero-unit">
+                <h1>Bem vindo ao SimProj!</h1>
+                <p>SimProj é uma suite de simulação financeira para pequenas empresas. A aplicação
+                disponibilizará, com o tempo, diversas ferramentas de análise financeira com
+                usabilidade simples, linguagem acessível e informações claras..</p>
+                <p>Nessa primeira versão, você já pode fazer a análise de viabilidade do seu projeto
+                utilizando a ferramenta Viabilidade de Projeto, no menu acima. Para tanto, basta
+                fornecer um arquivo CSV com o fluxo de caixa do projeto no formato pedido</p>
+            </div>
+
+            <footer>
+                <p>&copy; Gustavo Campos - gucampos@ufmg.br - 2013</p>
+            </footer>
+            {% endblock %}
+        </div> 
+        <!-- Vendor Javascript -->
+        <script src="{% static 'js/jquery.js' %}"></script>
+        <script src="{% static 'js/jquery.csv.js' %}"></script>
+        <script src="{% static 'js/jquery.cookie.js' %}"></script>
+        <script src="{% static 'js/bootstrap.js' %}"></script>
+        <script src="{% static 'js/d3.js' %}"></script> 
+        <script src="{% static 'js/d3.layout.js' %}"></script>
+        <!--<script src="{% static 'js/nv.js' %}"></script>-->
+        <script src="{% static 'js/rickshaw.js' %}"></script>
+
+        <!-- System Javascript -->
+        <script src="{% static 'js/main.js' %}"></script>
+        <script>
+        
+        var csrftoken = $.cookie('csrftoken');
+        
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+
+        $.ajaxSetup({
+            crossDomain: false, // obviates need for sameOrigin test
+            beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type)) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+          }
+        });
+        </script>
+        {% block screen_script %}{% endblock %}
+    </body>
+</html>

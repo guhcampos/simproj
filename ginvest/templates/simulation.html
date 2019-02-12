@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block customcss %}
+        <link rel="stylesheet" href="{% static "css/plot.css" %}">
+{% endblock %}
+
+{% block app-title %}Viabilidade de Projeto{% endblock %}
+
+{% block container %}
+<div id="configuracoes" class="configuracoes row">
+  <div class="span4">
+  <p id="config-arquivo" class="config-arquivo">
+    <!-- Arquivo de Dados -->
+    <span class="config-option">
+    <label for="file-input">Arquivo de Dados:</label>
+    <input type="file" id="file-input" name="file-input" />
+    </span>
+  </p>
+  </div>
+  <div class="span4">
+  <p id="config-juros" class="config-juros span3">
+    Configurações de Juros:
+    <span class="config-option">
+    <input type="checkbox" id="config-selic" value="config-selic" checked />
+    <label for="config-selic">Utilizar taxa SELIC</label>
+    </span>
+  </p>
+  </div>
+  <div class="span4">
+  <p id="config-infla" class="config-infla span3">
+    Configurações de Inflação:
+    <span class="config-option">
+    <input type="checkbox" id="config-inflacao-ipca" name="config-inflacao-ipca" value="ipca" checked />
+    <label for="config-inflacao-ipca">IPCA</label>
+    </span>
+    <span class="config-option">
+    <input type="checkbox" id="config-inflacao-igpm" name="config-inflacao-igpm" value="igpm" />
+    <label for="config-inflacao-igpm">IGP-M</label>
+    </span>
+  </p>
+  </div>
+</div>
+
+<div id="avaliacoes" class="avaliacoes row">
+
+  <div id="avalia-npv" class="span4 avalia-npv">
+    <h3>Valor Presente Líquido</h3>
+    <p class="avalia-valor"><!-- Valor do NPV carregará aqui --></p>
+  </div>
+
+  <div id="avalia-tir" class="span4 avalia-tir">
+    <h3>Taxa Interna de Retorno</h3>
+    <p class="avalia-valor"><!-- Valor da TIR carregará aqui --></p>
+  </div>
+
+  <div id="avalia-roi" clas="span4 avalia-roi">
+    <h3>Return of Investiment</h3>
+    <p class="avalia-valor"><!-- Valor do ROI carregará aqui --></p>
+  </div>
+
+</div>
+
+<div id="graficos" class="graficos row">
+  <p class="instrucoes" id="instrucoes">
+    Utilize o menu acima para configurar sua simulação e carregar seu arquivo de dados.
+  </p>
+  <svg id="graph-npv" class="graph span12"></svg>
+
+</div>
+
+<div id="tabelas" class="tabelas row">
+  <div class="span2"></div>
+  <div class="span8">
+  <table id="tabela-fluxo" class="tabela-fluxo table table-striped">
+
+  <thead>
+    <tr>
+      <th scope="column">Transação</th>
+      <th scope="column">Data</th>
+      <th scope="column">Valor Original</th>
+      <th scope="column">Valor Presente</th>
+    </tr>
+    <tbody id="tabela-fluxo-tbody">
+      <!-- Dados serão carregados aqui -->
+    </tbody>
+  </thead>
+  </table>
+  </div>
+  <div class="span2"></div>
+</div>
+{% endblock %}
+
+
+{% block screen_script %}
+<script src="{% static "js/plot.js" %}"></script>
+<script>
+
+// Realizamos o bind da função handleFileSelect() ao evento change 
+$(document).ready(function() {$('#file-input').bind('change', processFile);});
+$(document).ready($("#tabela-fluxo").hide());
+$(document).ready($("#avaliacoes").hide());
+$(document).ready($("#tabela-fluxo").hide());
+$(document).ready($("#avalia-roi").hide());
+
+function errorProcessing(jqXHR, message, error){
+  console.error("ERRO-> "+error);
+}
+
+function processFile(evento) {
+
+  // Somente consideramos o primeiro arquivo carregado
+  var arquivo = evento.target.files[0]; console.debug("Carregando arquivo '"+arquivo.name+"'.")
+
+  // Carregamos o arquivo em modo texto
+  var reader = new FileReader();
+  reader.readAsText(arquivo);
+
+  reader.onload = function(evento) {
+
+    // Converte arquivo em arrays Javascript e monta o objeto da request
+    var req = new Object
+    req.dados = $.csv.toArrays(evento.target.result);
+    req.conf = new Object;
+    req.conf.selic = $("#config-selic").is(":checked");
+    req.conf.ipca = $("#config-inflacao-ipca").is(":checked");
+    req.conf.igpm = $("#config-inflacao-igpm").is(":checked");
+
+    post_data(req);
+}
+
+function post_data(data_to_post) {
+    // Enviamos dados para o backend via AJAX
+    $.ajax({
+      type: "POST",
+      url:"/simulation/post/",
+      data: { "req": JSON.stringify(data_to_post)},
+      dataType: "json",
+      success: workProcessedData,
+    });
+  }
+  reader.onerror = function(){ alert('Não foi possível carregar o arquivo: ' + file.fileName); };
+}
+
+function workProcessedData(data) {
+
+  var dados = data.fluxos;
+  var codigo = "";
+
+  // Esconde instruções de uso
+  $("#instrucoes").hide();
+
+  if(data.npv > 0) {
+    var npv_class = "avalia-good";
+    var npv_msg = "O Valor Presente Líquido Acumulado do investimento é positivo. Investimento OK";
+  } else {
+    var npv_class ="avalia-bad";
+    var npv_msg = "O Valor Presente Líquido Acumulado do investimento é negativo. Investimento ruim.";
+  }
+
+  // Carrega valor do VPL no campo correspondente
+  codigo = "<span class=\"money "+npv_class+"\"";
+  codigo += ">";
+  codigo += data.npv;
+  codigo += "</span>";
+  codigo += "<span class=\"avalia-msg\">";
+  codigo += npv_msg;
+  codigo += "</span>";
+
+  $("#avalia-npv p.avalia-valor").html(codigo);
+
+  if(data.irr > data.selic_periodo) {
+    var irr_class = "avalia-good";
+    var irr_msg = "A Taxa Interna de Retorno supera o custo de capital no período. Investimento OK.";
+  } else {
+    var irr_class = "avalia-bad";
+    var irr_msg = "A Taxa Interna de Retorno é inferior ao custo de capital no período. Investimento Ruim.";
+  }
+
+  // Carrega o valor da TIR no campo correspondente
+  codigo = "<span class=\"irr "+irr_class+"\"";
+  codigo += ">";
+  codigo += data.irr;
+  codigo +="%</span>";
+  codigo += "<span class=\"avalia-msg\">";
+  codigo += irr_msg;
+  codigo += "</span>";
+
+  $("#avalia-tir p.avalia-valor").html(codigo);
+
+  // Mostra o block de avaliações
+  $("#avaliacoes").show();
+
+  // Carrega codigo nas tabelas
+  codigo = "";
+  $.each(data.fluxos, function(index, value) {
+    
+    var classe = index % 2 == 0 ? "evenrow" : "oddrow";
+    codigo += "<tr class=\""+classe+"\">";
+    codigo += "<td>"+value.desc+"</td>";
+    codigo += "<td class=\"data\">"+value.date+"</td>";
+    codigo += "<td class=\"number\"><span class=\"money\">"+value.val+"</span></td>";
+    codigo += "<td class=\"number\"><span class=\"money\">"+value.npv+"</span></td>";
+    codigo += "</tr>";
+  })
+  $("#tabela-fluxo-tbody").html(codigo); 
+  $("#tabela-fluxo").show();
+
+  // plota o grafico do npv
+  plotNPV(data.npvplot);
+
+}
+</script>
+{% if debug %}
+<script src="{% static "js/test.js" %}"></script>
+<script>$(document).ready(test_simulation);</script>
+{% endif %}
+{% endblock %}

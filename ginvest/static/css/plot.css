@@ -1,0 +1,25 @@
+/*svg.graph { border: 1px solid #ccc; height: 120px; } */
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+svg {
+  font-family: "Ubuntu", sans-serif;
+  font-size: 0.8em;
+  width: 800px;
+  height: 320px;
+}
+
+text {
+  fill: "white";
+}
+.axis path, .axis line { fill: none; stroke: #000; shape-rendering: crispEdges; }
+.bar { fill: url(#balance-gradient); stroke: url(#balance-gradient);}

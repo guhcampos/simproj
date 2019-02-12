@@ -1,0 +1,39 @@
+
+
+/* ==========================================================================
+   Author's custom styles
+   ========================================================================== */
+
+input[type="file"] { vertical-align: top; }
+span.config-option {font-size: 0.9em; display: block; width: 16em;}
+div.configuracoes label {display: inline-block; line-height: 1em;}
+div.configuracoes input {vertical-align: baseline;}
+td.number { text-align: right; }
+span.money:before { content: "R$ ";}
+div.avaliacoes h3 { font-size: 1.2em; text-align: center;}
+p.avalia-valor {text-align: center;}
+p.instrucoes {text-align: center; font-size: 1.4em; margin: 2em;}
+
+span.avalia-good { 
+    background-color: #AFE9AF; 
+    color: #217821;
+    display: block;
+    padding: 1em;
+}
+
+span.avalia-bad { 
+    background-color: #F4D7D7; 
+    color: #A02C2C;
+    display: block;
+    padding: 1em;
+}
+h3 {text-indent: 2em;}
+
+#development-warning {
+    width: 100%;
+    background-color: #F4D7D7;
+    color: #A02C2C;
+    font-weight: bold;
+    padding: 1em;
+    text-align: center;
+}

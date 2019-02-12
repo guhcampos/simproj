@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block customcss %}
+<style>
+#chart_container {
+        position: relative;
+        font-family: Ubuntu, Helvetica, sans-serif;
+        margin-top: 5em;
+}
+
+#chart { position: relative; left: 40px; }
+.rickshaw_graph .y_ticks { left: 0; }
+#y_axis { 
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 40px;
+
+}
+#legend_container { margin-top: 5em ;}
+
+</style>
+{% endblock %}
+
+{% block app-title %}Renda Fixa{% endblock %}
+
+{% block container %}
+<div id="configuracoes" class="configuracoes row">
+  <div class="span4">
+ <!--    <label for="select-titulo">
+      Selecione o Título/Vencimento:
+    </label>
+    <select id="select-titulo" name="select-titulo" class="span4">
+      <option value="" selected></option>
+      {% for titulo in titulos %}
+      <option value="{{titulo.0}}">{{titulo.1}}</option>
+      {% endfor %}
+    </select> -->
+    <label for="select-projeto">
+      Selecione o Projeto:
+    </label>
+    <select id="select-projeto" name="select-projeto" class="span4">
+      <option value="-1" selected></option>
+      {% for projeto in projetos %}
+      <option value="{{projeto.0}}">{{projeto.1}}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="span3">
+    <label for="input-valorinvestido">
+      Entre com o valor investido:
+    </label>
+    <input type="text" name="input-valorinvestido" id="input-valorinvestido" />
+  </div>
+  <div class="span3">
+    <label for="input-taxadecustodia">
+      Entre com a taxa de custódia:
+    </label>
+    <input type="text" name="input-taxadecustodia" id="input-taxadecustodia" disabled=disabled />
+  </div>
+  <div class="span2">
+    <br /><button id="submit" value="submit">Simular</button>
+  </div>
+</div>
+
+<div id="#results" class="results row ">
+  <div id="chart_container" class="span8 offset1">
+    <div id="fichart"></div>
+    <div id="y_axis"></div>
+  </div>
+  <div id="legend_container" class="span2">
+    <div id="legend"></div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block screen_script %}
+
+<script src="{% static 'js/fixedincome.js' %}"></script>
+<script>
+$(document).ready($("#submit").bind("click", collect_data));
+
+$(document).ready($("#select-projeto").bind("change", function() 
+{
+  if ($("#select-projeto").val() == -1) {
+    $("#input-valorinvestido").prop("disabled", false);
+  } 
+  else {
+    $("#input-valorinvestido").prop("disabled", true);
+  }
+}));
+
+/* Coleta os dados e envia para o servidor */
+function collect_data() {
+  data_to_post = new Object();
+  // data_to_post.titulo = $("#select-titulo").val();
+  data_to_post.startvalue = $("#input-valorinvestido").val();
+  // data_to_post.custody = $("#input-taxadecustodia").val();
+  data_to_post.projeto_id = $("#select-projeto").val();
+  post_data(data_to_post);
+}
+
+/* Envia dados para o servidor */
+function post_data(data_to_post) {
+  $.ajax({
+    type: "POST",
+    url:"/compare/post/",
+    data: {"data": JSON.stringify(data_to_post)},
+    dataType: "json",
+    success: process_data
+  });
+}
+
+/* Processa dados recebidos do servidor */
+function process_data(data_to_process) {
+
+  $("#fichart").html("");
+  $("#legend").html("");
+  $("#y_axis").html("");
+
+  var graph = new Rickshaw.Graph( {
+          element: document.getElementById('fichart'),
+          renderer: 'line',
+          height: 250,
+          series: convert_data(data_to_process),
+          min: 'auto'
+        });
+
+  var time = new Rickshaw.Fixtures.Time();
+  var months = time.unit('month');
+
+  var xAxis = new Rickshaw.Graph.Axis.Time({
+      graph: graph,
+      timeUnit: months
+  });
+
+  var y_axis = new Rickshaw.Graph.Axis.Y( {
+          graph: graph,
+          orientation: 'right',
+          tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
+          element: document.getElementById('y_axis'),
+  } );
+
+  var legend = new Rickshaw.Graph.Legend( {
+        element: document.querySelector('#legend'),
+        graph: graph
+      });
+  var hoverDetail = new Rickshaw.Graph.HoverDetail( {
+    graph: graph
+  } );
+
+  var shelving = new Rickshaw.Graph.Behavior.Series.Toggle( {
+    graph: graph,
+    legend: legend
+  } );
+
+  graph.render();
+}
+
+
+
+</script>
+{% if debug %}
+<script src="{% static 'js/test.js' %}"></script>
+<script>$(document).ready(test_fixed_income);</script>
+{% endif %}
+{% endblock %}
